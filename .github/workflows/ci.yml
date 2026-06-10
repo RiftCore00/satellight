@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install server dependencies
+        run: npm install
+        working-directory: server
+
+      - name: Validate HTML
+        uses: Cyb3r-Jak3/html5validator-action@v7.2.0
+        with:
+          root: .
+          css: true
+
+      - name: Check JavaScript syntax (client)
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq nodejs
+          for f in js/geolocation.js js/map.js js/app.js; do
+            node --check "$f" && echo "  ✓ $f"
+          done
+
+      - name: Check JavaScript syntax (server)
+        run: |
+          node --check index.js && echo "  ✓ server/index.js"
+        working-directory: server
