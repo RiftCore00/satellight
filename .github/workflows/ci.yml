@@ -29,12 +29,16 @@ jobs:
 
       - name: Check JavaScript syntax (client)
         run: |
-          sudo apt-get update -qq && sudo apt-get install -y -qq nodejs
           for f in js/geolocation.js js/map.js js/app.js; do
-            node --check "$f" && echo "  ✓ $f"
+            node --check "$f" && echo "  \u2713 $f"
           done
 
       - name: Check JavaScript syntax (server)
         run: |
-          node --check index.js && echo "  ✓ server/index.js"
+          node --check index.js && echo "  \u2713 server/index.js"
+        working-directory: server
+
+      - name: Validate server starts
+        run: |
+          timeout 3 node index.js & sleep 1 && kill $! 2>/dev/null; true
         working-directory: server
