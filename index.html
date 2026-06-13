@@ -12,33 +12,33 @@
 
   <div id="app">
 
-    <header id="topbar">
-      <span class="logo">Satellight</span>
-      <div id="connection-status">
-        <span id="status-indicator" class="indicator offline"></span>
+    <header id="topbar" role="banner">
+      <span class="logo" aria-label="Satellight">Satellight</span>
+      <div id="connection-status" aria-live="polite" aria-atomic="true">
+        <span id="status-indicator" class="indicator offline" aria-hidden="true"></span>
         <span id="status-text">Disconnected</span>
       </div>
     </header>
 
-    <main id="map-container">
-      <div id="map" role="application" aria-label="Live geolocation map"></div>
+    <main id="map-container" aria-label="Map area">
+      <div id="map" role="application" aria-label="Live geolocation map" tabindex="0"></div>
     </main>
 
-    <footer id="coords-bar">
-      <span class="coord-label">Lat</span>
-      <span id="lat-display" class="coord-value">--</span>
-      <span class="coord-divider">|</span>
-      <span class="coord-label">Lng</span>
-      <span id="lng-display" class="coord-value">--</span>
+    <footer id="coords-bar" role="contentinfo" aria-label="Current coordinates">
+      <span class="coord-label" aria-hidden="true">Lat</span>
+      <span id="lat-display" class="coord-value" aria-label="Latitude">--</span>
+      <span class="coord-divider" aria-hidden="true">|</span>
+      <span class="coord-label" aria-hidden="true">Lng</span>
+      <span id="lng-display" class="coord-value" aria-label="Longitude">--</span>
     </footer>
 
-    <div id="permission-overlay" class="overlay hidden" role="alertdialog" aria-labelledby="perm-title">
+    <div id="permission-overlay" class="overlay hidden" role="alertdialog" aria-modal="true" aria-labelledby="perm-title" aria-describedby="perm-message">
       <div class="overlay-backdrop"></div>
-      <div class="overlay-card">
-        <div class="overlay-icon" id="perm-icon">📍</div>
+      <div class="overlay-card" tabindex="-1">
+        <div class="overlay-icon" id="perm-icon" aria-hidden="true">📍</div>
         <h2 id="perm-title">Location Access Required</h2>
         <p id="perm-message">Requesting your location...</p>
-        <button id="retry-btn" class="btn hidden">Try Again</button>
+        <button id="retry-btn" class="btn hidden" aria-describedby="perm-message">Try Again</button>
       </div>
     </div>
 
