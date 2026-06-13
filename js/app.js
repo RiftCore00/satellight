@@ -6,6 +6,7 @@ const App = (() => {
 
   const dom = {
     overlay: document.getElementById('permission-overlay'),
+    overlayCard: document.querySelector('.overlay-card'),
     permIcon: document.getElementById('perm-icon'),
     permTitle: document.getElementById('perm-title'),
     permMessage: document.getElementById('perm-message'),
@@ -24,16 +25,21 @@ const App = (() => {
       startGeolocation();
     });
 
-    const followBtn = document.getElementById('follow-btn');
-    if (followBtn) {
-      followBtn.addEventListener('click', () => {
-        const active = followBtn.getAttribute('aria-pressed') === 'true';
-        const next = !active;
-        followBtn.setAttribute('aria-pressed', String(next));
-        followBtn.classList.toggle('active', next);
-        LiveMap.setFollowMe(next);
-      });
-    }
+    // Focus trap: keep keyboard focus inside the overlay while it is visible
+    dom.overlay.addEventListener('keydown', (e) => {
+      if (e.key !== 'Tab') return;
+      const focusable = Array.from(
+        dom.overlay.querySelectorAll('button:not([disabled]), [tabindex="0"]')
+      ).filter(el => !el.closest('.hidden') && el.offsetParent !== null);
+      if (!focusable.length) { e.preventDefault(); return; }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey) {
+        if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+      } else {
+        if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    });
 
     Geolocation.checkPermission().then(state => {
       handlePermChange(state);
@@ -55,8 +61,21 @@ const App = (() => {
   }
 
   function handlePermChange(state) {
+    if (state === Geolocation.STATE.AVAILABLE) {
+      dom.overlay.classList.add('hidden');
+      return;
+    }
+
     dom.overlay.classList.remove('hidden');
     dom.retryBtn.classList.add('hidden');
+
+    // Move focus into the overlay for keyboard/screen-reader users
+    requestAnimationFrame(() => {
+      const focusTarget = dom.retryBtn.classList.contains('hidden')
+        ? dom.overlayCard
+        : dom.retryBtn;
+      focusTarget.focus();
+    });
 
     switch (state) {
       case Geolocation.STATE.PROMPTING:
@@ -69,16 +88,12 @@ const App = (() => {
         dom.permTitle.textContent = 'Location Access Denied';
         dom.permMessage.textContent = 'Location access was blocked. To use Satellight, enable location permissions in your browser settings, then click "Try Again".';
         dom.retryBtn.classList.remove('hidden');
-        dom.retryBtn.focus();
         break;
       case Geolocation.STATE.UNAVAILABLE:
         dom.permIcon.textContent = '⚠️';
         dom.permTitle.textContent = 'Location Unavailable';
         dom.permMessage.textContent = 'Your location could not be determined. This may be due to weak GPS signal, disabled location services, or hardware limitations.';
         dom.retryBtn.classList.remove('hidden');
-        break;
-      case Geolocation.STATE.AVAILABLE:
-        dom.overlay.classList.add('hidden');
         break;
     }
   }
