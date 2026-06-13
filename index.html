@@ -29,12 +29,15 @@
       <div id="map" role="application" aria-label="Live geolocation map" tabindex="0"></div>
     </main>
 
-    <footer id="coords-bar" role="contentinfo" aria-label="Current coordinates">
-      <span class="coord-label" aria-hidden="true">Lat</span>
-      <span id="lat-display" class="coord-value" aria-label="Latitude">--</span>
-      <span class="coord-divider" aria-hidden="true">|</span>
-      <span class="coord-label" aria-hidden="true">Lng</span>
-      <span id="lng-display" class="coord-value" aria-label="Longitude">--</span>
+    <footer id="coords-bar">
+      <span class="coord-label">Lat</span>
+      <span id="lat-display" class="coord-value">--</span>
+      <span class="coord-divider">|</span>
+      <span class="coord-label">Lng</span>
+      <span id="lng-display" class="coord-value">--</span>
+      <span class="coord-divider">|</span>
+      <span class="coord-label">Acc</span>
+      <span id="acc-display" class="coord-value acc-value">--</span>
     </footer>
 
     <div id="permission-overlay" class="overlay hidden" role="alertdialog" aria-modal="true" aria-labelledby="perm-title">

@@ -158,6 +158,11 @@ html, body {
   color: #666;
 }
 
+.acc-value {
+  min-width: 56px;
+  color: #7ecfad;
+}
+
 /* ===== Permission Overlay ===== */
 .overlay {
   position: fixed;
