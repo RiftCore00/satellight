@@ -29,8 +29,18 @@ const LiveMap = (() => {
       detectRetina: true,
     }).addTo(_map);
 
-    // Fix map rendering on initial load
-    setTimeout(() => _map.invalidateSize(), 200);
+    // Fix map rendering on initial load: call invalidateSize when the
+    // container reaches its final painted size rather than guessing a delay.
+    if (typeof ResizeObserver !== 'undefined') {
+      const ro = new ResizeObserver(() => {
+        _map.invalidateSize();
+      });
+      ro.observe(document.getElementById(elementId));
+    } else {
+      // Fallback: invalidate after layout and again after full page load
+      setTimeout(() => _map.invalidateSize(), 0);
+      window.addEventListener('load', () => _map.invalidateSize(), { once: true });
+    }
 
     return _map;
   }
