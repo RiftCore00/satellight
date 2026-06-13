@@ -46,6 +46,42 @@ html, body {
   color: #e94560;
 }
 
+.topbar-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: 1px solid #0f3460;
+  border-radius: 6px;
+  color: #888;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.btn-icon.active {
+  background: rgba(233, 69, 96, 0.15);
+  border-color: #e94560;
+  color: #e94560;
+}
+
+.btn-icon:hover {
+  border-color: #e94560;
+  color: #e94560;
+}
+
+.btn-icon:focus-visible {
+  outline: 2px solid #e94560;
+  outline-offset: 2px;
+}
+
 #connection-status {
   display: flex;
   align-items: center;

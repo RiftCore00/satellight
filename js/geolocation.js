@@ -27,9 +27,7 @@ const Geolocation = (() => {
   let _state = STATE.PROMPTING;
   /** @type {number|null} watchPosition watch ID, or null when not watching. */
   let _watchId = null;
-  /** @type {Promise<string>|null} In-flight checkPermission promise (for serialisation). */
   let _permissionPromise = null;
-  /** @type {Object.<string, Function[]>} Internal event listener registry. */
   const _listeners = {};
 
   /**
@@ -75,6 +73,7 @@ const Geolocation = (() => {
    * @returns {Promise<string>} Resolves with the current {@link STATE} value.
    */
   async function checkPermission() {
+    // Serialize concurrent calls: return the same promise if one is already in flight
     if (_permissionPromise) return _permissionPromise;
 
     _permissionPromise = (async () => {
@@ -109,7 +108,7 @@ const Geolocation = (() => {
           }
         });
       } catch {
-        // Permissions API unavailable; state will be learned from watchPosition errors.
+        // permissions API unavailable, will learn from watchPosition errors
       }
 
       return _state;
