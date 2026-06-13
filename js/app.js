@@ -30,6 +30,7 @@ const App = (() => {
     statusText: document.getElementById('status-text'),
     latDisplay: document.getElementById('lat-display'),
     lngDisplay: document.getElementById('lng-display'),
+    accDisplay: document.getElementById('acc-display'),
   };
 
   /**
@@ -135,6 +136,11 @@ const App = (() => {
     LiveMap.setUserPosition(pos.lat, pos.lng, pos.accuracy);
     dom.latDisplay.textContent = pos.lat.toFixed(6);
     dom.lngDisplay.textContent = pos.lng.toFixed(6);
+    if (pos.accuracy != null) {
+      dom.accDisplay.textContent = pos.accuracy < 1000
+        ? `±${Math.round(pos.accuracy)}m`
+        : `±${(pos.accuracy / 1000).toFixed(1)}km`;
+    }
   }
 
   /**
