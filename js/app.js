@@ -44,6 +44,11 @@ const App = (() => {
   }
 
   function handlePermChange(state) {
+    if (state === Geolocation.STATE.AVAILABLE) {
+      dom.overlay.classList.add('hidden');
+      return;
+    }
+
     dom.overlay.classList.remove('hidden');
     dom.retryBtn.classList.add('hidden');
 
