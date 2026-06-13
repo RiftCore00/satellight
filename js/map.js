@@ -13,7 +13,7 @@ const LiveMap = (() => {
   let _userMarker = null;
   /** @type {import('leaflet').Circle|null} */
   let _accuracyCircle = null;
-  /** @type {Map<string, {marker: import('leaflet').Marker, lat: number, lng: number}>} */
+  let _followMe = true;
   const _remoteMarkers = new Map();
   /** @type {Map<string, number>} rAF handle per remote marker id */
   const _animFrames = new Map();
@@ -82,13 +82,14 @@ const LiveMap = (() => {
         className: 'accuracy-circle',
         interactive: false,
       }).addTo(_map);
-      _map.setView([lat, lng], 15);
+      if (_followMe) _map.setView([lat, lng], 15);
     } else {
       _userMarker.setLatLng([lat, lng]);
       if (_accuracyCircle) {
         _accuracyCircle.setLatLng([lat, lng]);
         if (accuracy != null) _accuracyCircle.setRadius(accuracy);
       }
+      if (_followMe) _map.panTo([lat, lng]);
     }
   }
 
@@ -183,11 +184,10 @@ const LiveMap = (() => {
     _remoteMarkers.delete(id);
   }
 
-  /**
-   * Return the raw Leaflet map instance, or `null` before {@link init} is called.
-   *
-   * @returns {import('leaflet').Map|null}
-   */
+  function setFollowMe(enabled) {
+    _followMe = !!enabled;
+  }
+
   function getMap() {
     return _map;
   }
@@ -203,6 +203,6 @@ const LiveMap = (() => {
   return {
     init, setUserPosition, interpolateTo,
     addRemoteMarker, removeRemoteMarker,
-    getMap, invalidateSize,
+    getMap, invalidateSize, setFollowMe,
   };
 })();
