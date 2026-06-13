@@ -2,6 +2,7 @@ const LiveMap = (() => {
   let _map = null;
   let _userMarker = null;
   let _accuracyCircle = null;
+  let _followMe = true;
   const _remoteMarkers = new Map();
   const _animFrames = new Map();
 
@@ -51,13 +52,14 @@ const LiveMap = (() => {
         className: 'accuracy-circle',
         interactive: false,
       }).addTo(_map);
-      _map.setView([lat, lng], 15);
+      if (_followMe) _map.setView([lat, lng], 15);
     } else {
       _userMarker.setLatLng([lat, lng]);
       if (_accuracyCircle) {
         _accuracyCircle.setLatLng([lat, lng]);
         if (accuracy != null) _accuracyCircle.setRadius(accuracy);
       }
+      if (_followMe) _map.panTo([lat, lng]);
     }
   }
 
@@ -129,6 +131,10 @@ const LiveMap = (() => {
     _remoteMarkers.delete(id);
   }
 
+  function setFollowMe(enabled) {
+    _followMe = !!enabled;
+  }
+
   function getMap() {
     return _map;
   }
@@ -140,6 +146,6 @@ const LiveMap = (() => {
   return {
     init, setUserPosition, interpolateTo,
     addRemoteMarker, removeRemoteMarker,
-    getMap, invalidateSize,
+    getMap, invalidateSize, setFollowMe,
   };
 })();

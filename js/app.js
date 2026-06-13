@@ -24,6 +24,17 @@ const App = (() => {
       startGeolocation();
     });
 
+    const followBtn = document.getElementById('follow-btn');
+    if (followBtn) {
+      followBtn.addEventListener('click', () => {
+        const active = followBtn.getAttribute('aria-pressed') === 'true';
+        const next = !active;
+        followBtn.setAttribute('aria-pressed', String(next));
+        followBtn.classList.toggle('active', next);
+        LiveMap.setFollowMe(next);
+      });
+    }
+
     Geolocation.checkPermission().then(state => {
       handlePermChange(state);
       if (state !== Geolocation.STATE.DENIED) {
