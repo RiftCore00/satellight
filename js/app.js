@@ -3,6 +3,8 @@ const App = (() => {
   let _ws = null;
   let _reconnectTimer = null;
   let _geoStop = null;
+  let _reconnectDelay = 1000;      // starts at 1 s
+  const _reconnectDelayMax = 30000; // caps at 30 s
 
   const dom = {
     overlay: document.getElementById('permission-overlay'),
@@ -103,6 +105,7 @@ const App = (() => {
 
     _ws.onopen = () => {
       clearTimeout(connectionTimeout);
+      _reconnectDelay = 1000; // reset backoff on successful connection
       setConnectionStatus('connected');
     };
 
@@ -143,9 +146,13 @@ const App = (() => {
 
   function scheduleReconnect() {
     if (_reconnectTimer) clearTimeout(_reconnectTimer);
+    // Add ±20% jitter to spread reconnect storms
+    const jitter = _reconnectDelay * 0.2 * (Math.random() * 2 - 1);
+    const delay = Math.min(_reconnectDelay + jitter, _reconnectDelayMax);
+    _reconnectDelay = Math.min(_reconnectDelay * 2, _reconnectDelayMax);
     _reconnectTimer = setTimeout(() => {
       connectWebSocket();
-    }, 5000);
+    }, delay);
   }
 
   // --- Boot ---
