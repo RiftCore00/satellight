@@ -12,11 +12,16 @@
 
   <div id="app">
 
-    <header id="topbar" role="banner">
-      <span class="logo" aria-label="Satellight">Satellight</span>
-      <div id="connection-status" aria-live="polite" aria-atomic="true">
-        <span id="status-indicator" class="indicator offline" aria-hidden="true"></span>
-        <span id="status-text">Disconnected</span>
+    <header id="topbar">
+      <span class="logo">Satellight</span>
+      <div class="topbar-controls">
+        <button id="follow-btn" class="btn-icon active" title="Follow my location" aria-pressed="true" aria-label="Follow my location">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M4.93 19.07l2.12-2.12M16.95 7.05l2.12-2.12"/></svg>
+        </button>
+        <div id="connection-status">
+          <span id="status-indicator" class="indicator offline"></span>
+          <span id="status-text">Disconnected</span>
+        </div>
       </div>
     </header>
 
@@ -32,10 +37,10 @@
       <span id="lng-display" class="coord-value" aria-label="Longitude">--</span>
     </footer>
 
-    <div id="permission-overlay" class="overlay hidden" role="alertdialog" aria-modal="true" aria-labelledby="perm-title" aria-describedby="perm-message">
+    <div id="permission-overlay" class="overlay hidden" role="alertdialog" aria-modal="true" aria-labelledby="perm-title">
       <div class="overlay-backdrop"></div>
       <div class="overlay-card" tabindex="-1">
-        <div class="overlay-icon" id="perm-icon" aria-hidden="true">📍</div>
+        <div class="overlay-icon" id="perm-icon">📍</div>
         <h2 id="perm-title">Location Access Required</h2>
         <p id="perm-message">Requesting your location...</p>
         <button id="retry-btn" class="btn hidden" aria-describedby="perm-message">Try Again</button>
