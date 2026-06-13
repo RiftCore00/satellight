@@ -1,8 +1,21 @@
+/**
+ * @fileoverview LiveMap — Leaflet map initialisation and marker management.
+ *
+ * Exposes a single `LiveMap` IIFE module that owns the Leaflet map instance,
+ * the user-position marker/accuracy-circle, and a collection of animated
+ * remote markers received over WebSocket.
+ */
+
 const LiveMap = (() => {
+  /** @type {import('leaflet').Map|null} */
   let _map = null;
+  /** @type {import('leaflet').Marker|null} */
   let _userMarker = null;
+  /** @type {import('leaflet').Circle|null} */
   let _accuracyCircle = null;
+  /** @type {Map<string, {marker: import('leaflet').Marker, lat: number, lng: number}>} */
   const _remoteMarkers = new Map();
+  /** @type {Map<string, number>} rAF handle per remote marker id */
   const _animFrames = new Map();
 
   const defaultIcon = L.icon({
@@ -15,6 +28,13 @@ const LiveMap = (() => {
     shadowSize: [41, 41],
   });
 
+  /**
+   * Initialise the Leaflet map inside the given DOM element.
+   *
+   * @param {string} elementId - ID of the container element.
+   * @param {import('leaflet').MapOptions} [options={}] - Additional Leaflet map options.
+   * @returns {import('leaflet').Map} The created Leaflet map instance.
+   */
   function init(elementId, options = {}) {
     _map = L.map(elementId, {
       zoomControl: true,
@@ -35,6 +55,17 @@ const LiveMap = (() => {
     return _map;
   }
 
+  /**
+   * Place or update the user-position marker and accuracy circle.
+   *
+   * On the first call a pulsing div-icon marker and an accuracy circle are
+   * created and the map is panned to the position.  Subsequent calls just
+   * move the existing marker and resize the circle.
+   *
+   * @param {number} lat - Latitude in decimal degrees.
+   * @param {number} lng - Longitude in decimal degrees.
+   * @param {number|null} accuracy - Horizontal accuracy radius in metres, or null.
+   */
   function setUserPosition(lat, lng, accuracy) {
     if (!_map) return;
 
@@ -61,6 +92,17 @@ const LiveMap = (() => {
     }
   }
 
+  /**
+   * Smoothly animate a remote marker to a new position using cubic ease-out.
+   *
+   * If the marker does not yet exist it is created immediately at the target
+   * position.  Any in-flight animation for the same `id` is cancelled before
+   * the new one starts.
+   *
+   * @param {string} id - Unique identifier for the remote entity.
+   * @param {number} targetLat - Destination latitude in decimal degrees.
+   * @param {number} targetLng - Destination longitude in decimal degrees.
+   */
   function interpolateTo(id, targetLat, targetLng) {
     if (!_map) return;
 
@@ -109,6 +151,13 @@ const LiveMap = (() => {
     _animFrames.set(id, requestAnimationFrame(animate));
   }
 
+  /**
+   * Add a new remote marker at the given position (no-op if already exists).
+   *
+   * @param {string} id - Unique identifier for the remote entity.
+   * @param {number} lat - Latitude in decimal degrees.
+   * @param {number} lng - Longitude in decimal degrees.
+   */
   function addRemoteMarker(id, lat, lng) {
     if (!_map) return;
     if (_remoteMarkers.has(id)) return;
@@ -116,6 +165,11 @@ const LiveMap = (() => {
     _remoteMarkers.set(id, { marker, lat, lng });
   }
 
+  /**
+   * Remove a remote marker from the map, cancelling any active animation.
+   *
+   * @param {string} id - Unique identifier for the remote entity.
+   */
   function removeRemoteMarker(id) {
     if (!_map) return;
     const existing = _remoteMarkers.get(id);
@@ -129,10 +183,19 @@ const LiveMap = (() => {
     _remoteMarkers.delete(id);
   }
 
+  /**
+   * Return the raw Leaflet map instance, or `null` before {@link init} is called.
+   *
+   * @returns {import('leaflet').Map|null}
+   */
   function getMap() {
     return _map;
   }
 
+  /**
+   * Recalculate the map container size and redraw tiles.
+   * Call this after a programmatic resize of the container element.
+   */
   function invalidateSize() {
     if (_map) _map.invalidateSize();
   }
