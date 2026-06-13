@@ -25,8 +25,8 @@
       </div>
     </header>
 
-    <main id="map-container">
-      <div id="map" role="application" aria-label="Live geolocation map"></div>
+    <main id="map-container" aria-label="Map area">
+      <div id="map" role="application" aria-label="Live geolocation map" tabindex="0"></div>
     </main>
 
     <footer id="coords-bar">
@@ -46,7 +46,7 @@
         <div class="overlay-icon" id="perm-icon">📍</div>
         <h2 id="perm-title">Location Access Required</h2>
         <p id="perm-message">Requesting your location...</p>
-        <button id="retry-btn" class="btn hidden">Try Again</button>
+        <button id="retry-btn" class="btn hidden" aria-describedby="perm-message">Try Again</button>
       </div>
     </div>
 
