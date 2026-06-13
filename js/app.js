@@ -1,9 +1,22 @@
+/**
+ * @fileoverview App — application bootstrap, WebSocket client, and UI controller.
+ *
+ * Wires together the {@link LiveMap} and {@link Geolocation} modules, manages
+ * the WebSocket connection to the mock server, and keeps the permission overlay
+ * and coords bar in sync with application state.
+ */
+
 const App = (() => {
+  /** @type {string} WebSocket server URL. */
   const WS_URL = 'ws://localhost:8080';
+  /** @type {WebSocket|null} Active WebSocket connection. */
   let _ws = null;
+  /** @type {number|null} Pending reconnect timer handle. */
   let _reconnectTimer = null;
+  /** @type {Function|null} Stop function returned by {@link Geolocation.start}. */
   let _geoStop = null;
 
+  /** @type {Object.<string, HTMLElement>} Cached DOM references. */
   const dom = {
     overlay: document.getElementById('permission-overlay'),
     permIcon: document.getElementById('perm-icon'),
@@ -16,6 +29,10 @@ const App = (() => {
     lngDisplay: document.getElementById('lng-display'),
   };
 
+  /**
+   * Initialise the application: set up the map, check geolocation permission,
+   * register event handlers, and open the WebSocket connection.
+   */
   function init() {
     LiveMap.init('map');
 
@@ -34,6 +51,9 @@ const App = (() => {
     connectWebSocket();
   }
 
+  /**
+   * (Re-)start geolocation watching, stopping any previous watch first.
+   */
   function startGeolocation() {
     if (_geoStop) _geoStop();
     _geoStop = Geolocation.start({
@@ -43,6 +63,12 @@ const App = (() => {
     });
   }
 
+  /**
+   * React to a geolocation permission/availability state change.
+   * Shows or hides the permission overlay and updates its content.
+   *
+   * @param {string} state - One of the `Geolocation.STATE` values.
+   */
   function handlePermChange(state) {
     dom.overlay.classList.remove('hidden');
     dom.retryBtn.classList.add('hidden');
@@ -72,18 +98,32 @@ const App = (() => {
     }
   }
 
+  /**
+   * Handle a new geolocation position fix: update the map marker and coords bar.
+   *
+   * @param {import('./geolocation').PositionPayload} pos - Position data from the Geolocation module.
+   */
   function handlePosition(pos) {
     LiveMap.setUserPosition(pos.lat, pos.lng, pos.accuracy);
     dom.latDisplay.textContent = pos.lat.toFixed(6);
     dom.lngDisplay.textContent = pos.lng.toFixed(6);
   }
 
+  /**
+   * Log a non-fatal geolocation error to the console.
+   *
+   * @param {GeolocationPositionError} err
+   */
   function handleGeoError(err) {
     console.warn('[Geolocation]', err.message || err);
   }
 
   // --- WebSocket ---
 
+  /**
+   * Open a new WebSocket connection to {@link WS_URL}.
+   * Guards against creating a duplicate connection if one is already open.
+   */
   function connectWebSocket() {
     try {
       _ws = new WebSocket(WS_URL);
@@ -130,6 +170,11 @@ const App = (() => {
     };
   }
 
+  /**
+   * Update the connection status indicator and label in the top bar.
+   *
+   * @param {'connected'|'disconnected'|'error'} status - New connection status.
+   */
   function setConnectionStatus(status) {
     dom.indicator.className = 'indicator ' + (
       status === 'connected' ? 'online' : 'offline'
@@ -141,6 +186,10 @@ const App = (() => {
     );
   }
 
+  /**
+   * Schedule a WebSocket reconnect attempt after a 5-second delay.
+   * Cancels any previously scheduled reconnect to avoid duplicates.
+   */
   function scheduleReconnect() {
     if (_reconnectTimer) clearTimeout(_reconnectTimer);
     _reconnectTimer = setTimeout(() => {
