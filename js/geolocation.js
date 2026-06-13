@@ -42,12 +42,17 @@ const Geolocation = (() => {
         _state = STATE.DENIED;
       } else if (result.state === 'prompt') {
         _state = STATE.PROMPTING;
+      } else if (result.state === 'granted') {
+        _state = STATE.AVAILABLE;
       }
       _emit('change', _state);
 
       result.addEventListener('change', () => {
         if (result.state === 'denied') {
           _state = STATE.DENIED;
+          _emit('change', _state);
+        } else if (result.state === 'granted') {
+          _state = STATE.AVAILABLE;
           _emit('change', _state);
         }
       });
