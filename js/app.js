@@ -85,6 +85,19 @@ const App = (() => {
   // --- WebSocket ---
 
   function connectWebSocket() {
+    // Guard: don't open a second socket while one is already live
+    if (_ws && (_ws.readyState === WebSocket.OPEN || _ws.readyState === WebSocket.CONNECTING)) {
+      return;
+    }
+
+    // Tear down any lingering socket before creating a new one
+    if (_ws) {
+      _ws.onclose = null; // prevent scheduleReconnect from firing again
+      _ws.onerror = null;
+      _ws.close();
+      _ws = null;
+    }
+
     try {
       _ws = new WebSocket(WS_URL);
     } catch {
@@ -95,7 +108,9 @@ const App = (() => {
 
     let connectionTimeout = setTimeout(() => {
       if (_ws && _ws.readyState !== WebSocket.OPEN) {
+        _ws.onclose = null;
         _ws.close();
+        _ws = null;
         setConnectionStatus('error');
         scheduleReconnect();
       }
@@ -115,6 +130,7 @@ const App = (() => {
     _ws.onerror = () => {
       clearTimeout(connectionTimeout);
       setConnectionStatus('error');
+      // onclose will fire after onerror; let it call scheduleReconnect
     };
 
     _ws.onmessage = (event) => {
