@@ -8,6 +8,7 @@ const Geolocation = (() => {
 
   let _state = STATE.PROMPTING;
   let _watchId = null;
+  let _permissionPromise = null;
   const _listeners = {};
 
   function _emit(event, data) {
@@ -26,36 +27,52 @@ const Geolocation = (() => {
   }
 
   async function checkPermission() {
-    if (!('geolocation' in navigator)) {
-      _state = STATE.UNAVAILABLE;
-      _emit('change', _state);
-      return _state;
-    }
+    // Serialize concurrent calls: return the same promise if one is already in flight
+    if (_permissionPromise) return _permissionPromise;
 
-    if (!('permissions' in navigator) || !navigator.permissions.query) {
-      return _state;
-    }
-
-    try {
-      const result = await navigator.permissions.query({ name: 'geolocation' });
-      if (result.state === 'denied') {
-        _state = STATE.DENIED;
-      } else if (result.state === 'prompt') {
-        _state = STATE.PROMPTING;
+    _permissionPromise = (async () => {
+      if (!('geolocation' in navigator)) {
+        _state = STATE.UNAVAILABLE;
+        _emit('change', _state);
+        return _state;
       }
-      _emit('change', _state);
 
-      result.addEventListener('change', () => {
+      if (!('permissions' in navigator) || !navigator.permissions.query) {
+        return _state;
+      }
+
+      try {
+        const result = await navigator.permissions.query({ name: 'geolocation' });
         if (result.state === 'denied') {
           _state = STATE.DENIED;
-          _emit('change', _state);
+        } else if (result.state === 'prompt') {
+          _state = STATE.PROMPTING;
+        } else if (result.state === 'granted') {
+          _state = STATE.AVAILABLE;
         }
-      });
-    } catch {
-      // permissions API unavailable, will learn from watchPosition errors
-    }
+        _emit('change', _state);
 
-    return _state;
+        result.addEventListener('change', () => {
+          if (result.state === 'denied') {
+            _state = STATE.DENIED;
+            _emit('change', _state);
+          } else if (result.state === 'granted') {
+            _state = STATE.AVAILABLE;
+            _emit('change', _state);
+          }
+        });
+      } catch {
+        // permissions API unavailable, will learn from watchPosition errors
+      }
+
+      return _state;
+    })();
+
+    try {
+      return await _permissionPromise;
+    } finally {
+      _permissionPromise = null;
+    }
   }
 
   function start(callbacks = {}) {
