@@ -47,7 +47,7 @@ const LiveMap = (() => {
       });
       _userMarker = L.marker([lat, lng], { icon, zIndexOffset: 1000 }).addTo(_map);
       _accuracyCircle = L.circle([lat, lng], {
-        radius: accuracy || 50,
+        radius: accuracy != null ? accuracy : 50,
         className: 'accuracy-circle',
         interactive: false,
       }).addTo(_map);
