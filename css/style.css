@@ -82,6 +82,24 @@ html, body {
   outline-offset: 2px;
 }
 
+.tile-layer-select {
+  appearance: none;
+  background: #0f3460;
+  color: #e0e0e0;
+  border: 1px solid #1a1a4e;
+  border-radius: 6px;
+  padding: 4px 24px 4px 8px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23e0e0e0'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 6px center;
+  outline: none;
+}
+.tile-layer-select:hover, .tile-layer-select:focus-visible {
+  border-color: #e94560;
+}
+
 #connection-status {
   display: flex;
   align-items: center;
