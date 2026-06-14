@@ -58,6 +58,8 @@ const LiveMap = (() => {
       detectRetina: true,
     }).addTo(_map);
 
+    L.control.scale({ position: 'bottomleft', imperial: false }).addTo(_map);
+
     // Fix map rendering on initial load: call invalidateSize when the
     // container reaches its final painted size rather than guessing a delay.
     if (typeof ResizeObserver !== 'undefined') {
