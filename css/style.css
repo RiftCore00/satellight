@@ -163,6 +163,17 @@ html, body {
   color: #7ecfad;
 }
 
+.coord-format-btn {
+  width: auto;
+  min-width: 36px;
+  padding: 0 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-left: auto;
+  color: #aaa;
+}
+
 /* ===== Permission Overlay ===== */
 .overlay {
   position: fixed;

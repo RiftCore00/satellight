@@ -17,6 +17,8 @@ const App = (() => {
   let _geoStop = null;
   let _reconnectDelay = 1000;      // starts at 1 s
   const _reconnectDelayMax = 30000; // caps at 30 s
+  let _coordFormat = 'dd';
+  let _lastPosition = null;
 
   /** @type {Object.<string, HTMLElement>} Cached DOM references. */
   const dom = {
@@ -61,6 +63,15 @@ const App = (() => {
       }
     });
 
+    const formatToggle = document.getElementById('coord-format-toggle');
+    if (formatToggle) {
+      formatToggle.addEventListener('click', () => {
+        _coordFormat = _coordFormat === 'dd' ? 'dms' : 'dd';
+        formatToggle.textContent = _coordFormat.toUpperCase();
+        if (_lastPosition) _updateCoords(_lastPosition);
+      });
+    }
+
     Geolocation.checkPermission().then(state => {
       handlePermChange(state);
       if (state !== Geolocation.STATE.DENIED) {
@@ -69,6 +80,30 @@ const App = (() => {
     });
 
     connectWebSocket();
+  }
+
+  function _toDMS(deg, isLat) {
+    const abs = Math.abs(deg);
+    const d = Math.floor(abs);
+    const m = Math.floor((abs - d) * 60);
+    const s = ((abs - d - m / 60) * 3600).toFixed(2);
+    const dir = isLat ? (deg >= 0 ? 'N' : 'S') : (deg >= 0 ? 'E' : 'W');
+    return `${d}°${m}'${s}"${dir}`;
+  }
+
+  function _updateCoords(pos) {
+    if (_coordFormat === 'dms') {
+      dom.latDisplay.textContent = _toDMS(pos.lat, true);
+      dom.lngDisplay.textContent = _toDMS(pos.lng, false);
+    } else {
+      dom.latDisplay.textContent = pos.lat.toFixed(6);
+      dom.lngDisplay.textContent = pos.lng.toFixed(6);
+    }
+    if (pos.accuracy != null) {
+      dom.accDisplay.textContent = pos.accuracy < 1000
+        ? `±${Math.round(pos.accuracy)}m`
+        : `±${(pos.accuracy / 1000).toFixed(1)}km`;
+    }
   }
 
   /**
@@ -134,13 +169,8 @@ const App = (() => {
    */
   function handlePosition(pos) {
     LiveMap.setUserPosition(pos.lat, pos.lng, pos.accuracy);
-    dom.latDisplay.textContent = pos.lat.toFixed(6);
-    dom.lngDisplay.textContent = pos.lng.toFixed(6);
-    if (pos.accuracy != null) {
-      dom.accDisplay.textContent = pos.accuracy < 1000
-        ? `±${Math.round(pos.accuracy)}m`
-        : `±${(pos.accuracy / 1000).toFixed(1)}km`;
-    }
+    _lastPosition = pos;
+    _updateCoords(pos);
   }
 
   /**
