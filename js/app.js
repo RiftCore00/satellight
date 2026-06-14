@@ -45,6 +45,11 @@ const App = (() => {
       startGeolocation();
     });
 
+    const layerSelect = document.getElementById('tile-layer-select');
+    if (layerSelect) {
+      layerSelect.addEventListener('change', () => LiveMap.setTileLayer(layerSelect.value));
+    }
+
     // Focus trap: keep keyboard focus inside the overlay while it is visible
     dom.overlay.addEventListener('keydown', (e) => {
       if (e.key !== 'Tab') return;

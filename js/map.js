@@ -17,6 +17,40 @@ const LiveMap = (() => {
   const _remoteMarkers = new Map();
   /** @type {Map<string, number>} rAF handle per remote marker id */
   const _animFrames = new Map();
+  /** @type {import('leaflet').TileLayer|null} */
+  let _tileLayer = null;
+
+  const _tileLayers = {
+    osm: {
+      url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+      options: {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>',
+        detectRetina: true,
+      },
+    },
+    'carto-light': {
+      url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+      options: {
+        maxZoom: 20,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      },
+    },
+    'carto-dark': {
+      url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+      options: {
+        maxZoom: 20,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      },
+    },
+    satellite: {
+      url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+      options: {
+        maxZoom: 19,
+        attribution: '&copy; Esri, Maxar, Earthstar Geographics',
+      },
+    },
+  };
 
   // Explicitly set default icon URLs to HTTPS to prevent Leaflet from
   // auto-detecting a potentially HTTP or broken relative path from the CSS.
@@ -52,11 +86,7 @@ const LiveMap = (() => {
       ...options,
     }).setView([0, 0], 2);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>',
-      detectRetina: true,
-    }).addTo(_map);
+    _tileLayer = L.tileLayer(_tileLayers.osm.url, _tileLayers.osm.options).addTo(_map);
 
     // Fix map rendering on initial load: call invalidateSize when the
     // container reaches its final painted size rather than guessing a delay.
@@ -207,6 +237,14 @@ const LiveMap = (() => {
     _followMe = !!enabled;
   }
 
+  function setTileLayer(name) {
+    if (!_map || !_tileLayers[name]) return;
+    const { url, options } = _tileLayers[name];
+    const newLayer = L.tileLayer(url, options);
+    if (_tileLayer) _map.removeLayer(_tileLayer);
+    _tileLayer = newLayer.addTo(_map);
+  }
+
   function getMap() {
     return _map;
   }
@@ -222,6 +260,6 @@ const LiveMap = (() => {
   return {
     init, setUserPosition, interpolateTo,
     addRemoteMarker, removeRemoteMarker,
-    getMap, invalidateSize, setFollowMe,
+    getMap, invalidateSize, setFollowMe, setTileLayer,
   };
 })();
