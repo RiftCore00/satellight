@@ -40,6 +40,11 @@ const App = (() => {
   function init() {
     LiveMap.init('map');
 
+    const layerSelect = document.getElementById('tile-layer-select');
+    if (layerSelect) {
+      layerSelect.addEventListener('change', () => LiveMap.setTileLayer(layerSelect.value));
+    }
+
     dom.retryBtn.addEventListener('click', () => {
       dom.overlay.classList.add('hidden');
       startGeolocation();
