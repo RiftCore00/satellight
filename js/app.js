@@ -17,6 +17,7 @@ const App = (() => {
   let _geoStop = null;
   let _reconnectDelay = 1000;      // starts at 1 s
   const _reconnectDelayMax = 30000; // caps at 30 s
+  const _positionHistory = [];
 
   /** @type {Object.<string, HTMLElement>} Cached DOM references. */
   const dom = {
@@ -61,6 +62,11 @@ const App = (() => {
       }
     });
 
+    const exportBtn = document.getElementById('export-csv-btn');
+    if (exportBtn) {
+      exportBtn.addEventListener('click', _exportCSV);
+    }
+
     Geolocation.checkPermission().then(state => {
       handlePermChange(state);
       if (state !== Geolocation.STATE.DENIED) {
@@ -69,6 +75,24 @@ const App = (() => {
     });
 
     connectWebSocket();
+  }
+
+  function _exportCSV() {
+    if (_positionHistory.length === 0) return;
+    const header = 'timestamp,lat,lng,accuracy,altitude,heading,speed';
+    const rows = _positionHistory.map(p =>
+      `${p.timestamp},${p.lat},${p.lng},${p.accuracy ?? ''},${p.altitude ?? ''},${p.heading ?? ''},${p.speed ?? ''}`
+    );
+    const csv = [header, ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `satellight-positions-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   }
 
   /**
@@ -141,6 +165,15 @@ const App = (() => {
         ? `±${Math.round(pos.accuracy)}m`
         : `±${(pos.accuracy / 1000).toFixed(1)}km`;
     }
+    _positionHistory.push({
+      timestamp: new Date(pos.timestamp || Date.now()).toISOString(),
+      lat: pos.lat,
+      lng: pos.lng,
+      accuracy: pos.accuracy,
+      altitude: pos.altitude,
+      heading: pos.heading,
+      speed: pos.speed,
+    });
   }
 
   /**
