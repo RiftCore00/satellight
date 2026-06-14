@@ -58,6 +58,23 @@ const LiveMap = (() => {
       detectRetina: true,
     }).addTo(_map);
 
+    // Tile loading progress bar
+    const progressEl = document.getElementById('tile-progress');
+    let tileLoadCount = 0;
+    if (progressEl) {
+      _map.on('tileloadstart', () => {
+        tileLoadCount++;
+        progressEl.classList.add('active');
+      });
+      _map.on('tileload tileerror', () => {
+        tileLoadCount--;
+        if (tileLoadCount <= 0) {
+          tileLoadCount = 0;
+          progressEl.classList.remove('active');
+        }
+      });
+    }
+
     // Fix map rendering on initial load: call invalidateSize when the
     // container reaches its final painted size rather than guessing a delay.
     if (typeof ResizeObserver !== 'undefined') {
